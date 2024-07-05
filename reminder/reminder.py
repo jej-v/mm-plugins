@@ -38,17 +38,12 @@ class Reminder(commands.Cog):
     async def send_reminder(self, rmc: ReminderCron):
         delay = rmc.dt - datetime.datetime.now().timestamp()
         await asyncio.sleep(delay)
-        print("Preparing to send...")
         if rmc in self.reminders:
-            print("Found in the list!")
             ch = self.bot.get_channel(rmc.channel)
-            print("Channel: ", ch.name)
             msg = await ch.fetch_message(rmc.initial_message)
-            print("Message: ", msg.content[:20], "...")
 
             await msg.reply("Reminding you to do this!! <:yello:1147137527896092703>", mention_author=True)
             self.reminders.remove(rmc)
-            print("Replied")
 
 
     @commands.Cog.listener()
@@ -74,8 +69,6 @@ class Reminder(commands.Cog):
 
         j = r.json()
         if len(j["intents"]) and j["intents"][0]["name"] == "Reminder":
-            print("Reminder detected")
-
             dtt = "tomorrow"
             if "wit$datetime:datetime" in j["entities"].keys():
                 dtt = j["entities"]["wit$datetime:datetime"][0]["body"]
@@ -97,9 +90,7 @@ class Reminder(commands.Cog):
             )
             self.reminders.append(rmc)
 
-            print("Scheduling...")
             asyncio.ensure_future(self.send_reminder(rmc))
-            print("Scheduled...")
 
 
 async def setup(bot: commands.Bot):
