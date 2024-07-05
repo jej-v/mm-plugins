@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 from typing import Optional
 
@@ -11,6 +12,8 @@ from discord.ext import commands
 
 
 WIT_API_KEY = os.getenv("WIT_API_KEY", "")
+DIR = os.path.dirname(__file__)
+SAVE_FILE = os.path.join(DIR, "save.json")
 
 
 class ReminderCron:
@@ -34,10 +37,18 @@ class Reminder(commands.Cog):
         self.reminders: list[ReminderCron] = []
         self.cal = pdt.Calendar()
 
+        if os.path.exists(SAVE_FILE):
+            with open(SAVE_FILE, "r") as f:
+                j = json.load(f)
+                self.reminders = [ReminderCron(**r) for r in j]
+                for rmc in self.reminders:
+                    asyncio.ensure_future(self.send_reminder(rmc))
+
 
     async def send_reminder(self, rmc: ReminderCron):
         delay = rmc.dt - datetime.datetime.now().timestamp()
-        await asyncio.sleep(delay)
+        if delay > 0:
+            await asyncio.sleep(delay)
         if rmc in self.reminders:
             ch = self.bot.get_channel(rmc.channel)
             msg = await ch.fetch_message(rmc.initial_message)
@@ -91,6 +102,10 @@ class Reminder(commands.Cog):
             self.reminders.append(rmc)
 
             asyncio.ensure_future(self.send_reminder(rmc))
+
+            with open(SAVE_FILE, "w+") as f:
+                j = [r.__dict__ for r in self.reminders]
+                f.write(json.dumps(j))
 
 
 async def setup(bot: commands.Bot):
