@@ -56,6 +56,10 @@ class Reminder(commands.Cog):
             await msg.reply("Reminding you to do this!! <:yello:1147137527896092703>", mention_author=True)
             self.reminders.remove(rmc)
 
+            with open(SAVE_FILE, "w+") as f:
+                j = [r.__dict__ for r in self.reminders]
+                f.write(json.dumps(j))
+
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
@@ -64,6 +68,10 @@ class Reminder(commands.Cog):
             if rmc is not None and rmc.author == user.id:
                 self.reminders.remove(rmc)
                 await reaction.message.delete()
+
+                with open(SAVE_FILE, "w+") as f:
+                    j = [r.__dict__ for r in self.reminders]
+                    f.write(json.dumps(j))
 
 
     @commands.Cog.listener()
