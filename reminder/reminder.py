@@ -71,6 +71,9 @@ class Reminder(commands.Cog):
         if message.author.bot:
             return
 
+        if not "remind" in message.content.lower():
+            return
+
         r = requests.get(
             f"https://api.wit.ai/message?v=20240705&q={message.content[:280]}",
             headers={
